@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le grand jeu des codes</title>
+<style>
+:root{
+  --green:#45967C; --blue:#247091; --violet:#484596;
+  --green-l:#E6F2EE; --blue-l:#E3EEF4; --violet-l:#ECEBF6;
+  --ink:#1f2933; --muted:#6b7280; --bg:#F5F7F9; --card:#ffffff;
+  --ok:#2E9E6A; --ko:#D64545; --gold:#E8B730;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Calibri,system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+main{flex:1;width:100%;max-width:760px;margin:0 auto;padding:20px 16px 32px}
+footer{text-align:center;font-size:12px;color:var(--muted);padding:12px 16px;border-top:1px solid #e3e7eb}
+.card{background:var(--card);border-radius:18px;box-shadow:0 6px 24px rgba(36,112,145,.10);padding:28px 24px;border-left:6px solid var(--blue)}
+h1{margin:0 0 6px;font-size:30px;color:var(--green)}
+.sub{color:var(--muted);margin:0 0 22px}
+.btn{appearance:none;border:0;border-radius:12px;padding:14px 22px;font-size:17px;font-weight:700;cursor:pointer;color:#fff;background:var(--green);transition:transform .08s,filter .15s}
+.btn:hover{filter:brightness(1.07)} .btn:active{transform:scale(.97)}
+.btn.blue{background:var(--blue)} .btn.violet{background:var(--violet)}
+input[type=text]{width:100%;font-size:18px;padding:13px 14px;border-radius:12px;border:2px solid #d7dde3;margin:6px 0 18px;outline:none}
+input[type=text]:focus{border-color:var(--blue)}
+.rounds{display:grid;gap:10px;margin:0 0 24px}
+.round{display:flex;gap:14px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--bg)}
+.round .num{flex:0 0 38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800}
+.round b{display:block}
+.round span{color:var(--muted);font-size:14px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.pill{padding:7px 13px;border-radius:999px;font-weight:700;font-size:14px;color:#fff}
+.score{font-weight:800;font-size:18px;color:var(--blue)}
+.streak{font-size:14px;color:var(--gold);font-weight:800;min-width:80px;text-align:right}
+.bar{height:8px;background:#e3e7eb;border-radius:99px;overflow:hidden;margin-bottom:22px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .3s}
+.q-label{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:8px}
+.q{font-size:22px;font-weight:700;margin:0 0 20px;line-height:1.35}
+.q .big{display:inline-block;font-size:34px;padding:6px 18px;border-radius:12px;background:var(--violet-l);color:var(--violet);font-family:Consolas,monospace}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opts.files{grid-template-columns:1fr}
+.opt{border:2px solid #d7dde3;background:#fff;border-radius:14px;padding:16px 14px;font-size:17px;font-weight:600;cursor:pointer;text-align:center;color:var(--ink);transition:border-color .15s,background .15s,transform .08s}
+.opt:hover:not(:disabled){border-color:var(--blue);background:var(--blue-l)}
+.opt:active:not(:disabled){transform:scale(.98)}
+.opts.files .opt{font-family:Consolas,monospace;font-size:15px;text-align:left;word-break:break-all}
+.opt.ok{border-color:var(--ok);background:#E5F6EE;color:#17643F}
+.opt.ko{border-color:var(--ko);background:#FBE9E9;color:#8E2424}
+.opt:disabled{cursor:default}
+.feedback{margin-top:18px;padding:14px 16px;border-radius:12px;font-size:16px;display:none}
+.feedback.ok{display:block;background:#E5F6EE;color:#17643F}
+.feedback.ko{display:block;background:#FBE9E9;color:#8E2424}
+.next{margin-top:18px;display:none;width:100%}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{display:grid;gap:10px;align-content:start}
+.tile{border:2px solid #d7dde3;background:#fff;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;text-align:center;font-size:15px;transition:all .15s}
+.tile.code{font-family:Consolas,monospace;color:var(--violet);font-size:17px}
+.tile.sel{border-color:var(--blue);background:var(--blue-l);transform:scale(1.03)}
+.tile.done{border-color:var(--ok);background:#E5F6EE;color:#17643F;cursor:default;opacity:.75}
+.tile.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+.result{text-align:center}
+.medal{font-size:72px;line-height:1;margin:6px 0 10px}
+.final{font-size:44px;font-weight:900;color:var(--blue);margin:0}
+.recap{text-align:left;margin:22px 0;background:var(--bg);border-radius:12px;padding:14px 16px}
+.recap h3{margin:0 0 8px;font-size:16px;color:var(--violet)}
+.recap li{margin:6px 0}
+.recap code{background:var(--violet-l);color:var(--violet);padding:1px 6px;border-radius:6px;font-weight:700}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:9}
+@media (max-width:520px){
+  .opts{grid-template-columns:1fr}
+  .q{font-size:19px} h1{font-size:25px} .card{padding:22px 16px}
+}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<main><div id="app"></div></main>
+<footer>Support de formation - Chrystelle THEOPHILE - MAJ 10-2026 - Le grand jeu des codes</footer>
+
+<script>
+// ---------- Données : la fiche « Le petit dico des documents » ----------
+const FAM = {
+  ventes:'Ventes et clients', comm:'Communication', rh:'Ressources humaines', compta:'Comptabilité et finances',
+  admin:'Administratif et juridique', achats:'Achats et fournisseurs', courrier:'Courrier et traçabilité'
+};
+const CODES = [
+ ['OFFRE','Proposition commerciale','ventes','Présenter une offre à un prospect'],
+ ['DEVIS','Devis','ventes','Chiffrer avant l\'accord du client'],
+ ['PROFORMA','Facture pro forma','ventes','Devis présenté comme une facture, avant paiement'],
+ ['BDC','Bon de commande','ventes','Confirmer une commande par écrit'],
+ ['ARC','Accusé de réception de commande','ventes','Dire au client que sa commande est enregistrée'],
+ ['BL','Bon de livraison','ventes','Accompagner la marchandise, signé à réception'],
+ ['FACT','Facture','ventes','Demander le paiement'],
+ ['AVOIR','Avoir','ventes','Annuler ou réduire une facture'],
+ ['RELANCE','Lettre de relance','ventes','Rappeler un paiement en attente'],
+ ['RECLA','Réclamation','ventes','Garder trace d\'une insatisfaction client'],
+ ['CGV','Conditions générales de vente','ventes','Fixer prix, délais et paiement'],
+ ['LETTRE','Lettre','comm','Message écrit et structuré à une personne'],
+ ['MAIL','Courriel enregistré','comm','Conserver un échange important'],
+ ['NS','Note de service','comm','Donner une consigne au personnel'],
+ ['NI','Note d\'information','comm','Informer sans donner de consigne'],
+ ['CONVOC','Convocation','comm','Inviter officiellement à une réunion'],
+ ['ODJ','Ordre du jour','comm','Annoncer les sujets d\'une réunion'],
+ ['CR','Compte rendu','comm','Résumer ce qui a été dit et décidé'],
+ ['RAPPORT','Rapport','comm','Analyser une situation, proposer des solutions'],
+ ['PRES','Présentation','comm','Appuyer une intervention orale'],
+ ['TAB','Tableau de suivi','comm','Suivre l\'avancement d\'un dossier'],
+ ['CV','Curriculum vitae','rh','Présenter le parcours d\'un candidat'],
+ ['LM','Lettre de motivation','rh','Expliquer la démarche d\'un candidat'],
+ ['CTRAV','Contrat de travail','rh','Fixer les conditions d\'emploi'],
+ ['AVENANT','Avenant','rh','Modifier un contrat existant'],
+ ['BP','Bulletin de paie','rh','Détailler le salaire du mois'],
+ ['CP','Demande de congés payés','rh','Demander et valider ses congés'],
+ ['ARRET','Arrêt de travail','rh','Justifier une absence pour santé'],
+ ['ENTRET','Entretien annuel','rh','Faire le bilan, fixer les objectifs'],
+ ['FORM','Attestation de formation','rh','Prouver qu\'une formation a été suivie'],
+ ['ATTEST','Attestation employeur','rh','Certifier la situation d\'un salarié'],
+ ['CERT','Certificat de travail','rh','Remis au salarié qui quitte l\'entreprise'],
+ ['PLANNING','Planning','rh','Organiser horaires, congés, rendez-vous'],
+ ['RELEVE','Relevé bancaire','compta','Suivre les mouvements du compte'],
+ ['REMISE','Bordereau de remise de chèques','compta','Déposer des chèques à la banque'],
+ ['RIB','Relevé d\'identité bancaire','compta','Transmettre ses coordonnées bancaires'],
+ ['NDF','Note de frais','compta','Rembourser une dépense avancée'],
+ ['JUSTIF','Justificatif','compta','Prouver une dépense (ticket, reçu)'],
+ ['ECHEANCIER','Échéancier','compta','Prévoir paiements et encaissements'],
+ ['BUDGET','Budget prévisionnel','compta','Prévoir dépenses et recettes'],
+ ['DECL','Déclaration','compta','TVA, cotisations sociales, impôts'],
+ ['BILAN','Bilan','compta','Situation financière en fin d\'exercice'],
+ ['KBIS','Extrait Kbis','admin','Prouver l\'existence de l\'entreprise'],
+ ['STATUTS','Statuts','admin','Règles de fonctionnement de la société'],
+ ['PV','Procès-verbal','admin','Trace officielle d\'une décision'],
+ ['ASSUR','Assurance','admin','Prouver qu\'un bien ou l\'entreprise est assuré'],
+ ['BAIL','Bail','admin','Louer un local ou un logement'],
+ ['MANDAT','Mandat','admin','Autoriser quelqu\'un à agir pour un autre'],
+ ['REGL','Règlement intérieur','admin','Règles de vie dans l\'entreprise'],
+ ['PROC','Procédure interne','admin','Décrire une tâche étape par étape'],
+ ['DA','Demande d\'achat','achats','Demander l\'autorisation d\'acheter'],
+ ['BR','Bon de réception','achats','Contrôler la livraison reçue'],
+ ['TARIF','Catalogue / tarifs','achats','Connaître produits et prix'],
+ ['CONTRAT','Contrat','achats','S\'engager avec un fournisseur'],
+ ['REG','Registre arrivée / départ','courrier','Enregistrer tout le courrier'],
+ ['AR','Accusé de réception','courrier','Prouver qu\'un envoi a été reçu'],
+ ['DEPOT','Preuve de dépôt','courrier','Prouver la date d\'envoi'],
+ ['BORD','Bordereau d\'envoi','courrier','Lister les pièces jointes']
+];
+const DIALOGS = [
+ {who:'Anna, assistante', s:'Tu as le BL de la commande de ce matin ? Je dois vérifier que tout est arrivé.', q:'Que cherche Anna ?',
+  ok:'Le bon de livraison', ko:['Le bon de commande','Le bordereau d\'envoi','La facture'], k:['BL','Bon de livraison'],
+  ex:'Le BL accompagne la marchandise : il permet de vérifier ce qui a été livré.'},
+ {who:'Le gérant', s:'Denis est en AM jusqu\'au 03/12, préviens ses clients.', q:'Pourquoi Denis est-il absent ?',
+  ok:'Il est en arrêt maladie', ko:['Il est en congés payés','Il est en formation','Il est absent le matin seulement'], k:['AM','Arrêt maladie (code ARRET)'],
+  ex:'AM = arrêt maladie (dans la fiche : ARRET). Les congés payés, ce sont les CP.'},
+ {who:'Steeve, technicien', s:'Je pose mes CP du 21 au 31 décembre, tu peux mettre à jour le planning ?', q:'Que fait Steeve ?',
+  ok:'Il prend ses congés payés', ko:['Il est en arrêt maladie','Il part en formation','Il récupère des heures supplémentaires'], k:['CP','Congés payés'],
+  ex:'CP = congés payés : on les reporte ensuite dans le planning de l\'équipe.'},
+ {who:'Le cabinet comptable', s:'Il me manque le RIB du nouveau fournisseur pour lancer le virement.', q:'Que faut-il transmettre ?',
+  ok:'Les coordonnées bancaires du fournisseur', ko:['Le relevé bancaire du mois','Le bon de réception','La facture pro forma'], k:['RIB','Relevé d\'identité bancaire'],
+  ex:'Le RIB donne les coordonnées bancaires ; le relevé bancaire, lui, liste les opérations du compte.'},
+ {who:'Un client au téléphone', s:'J\'ai bien reçu votre devis, mais ma banque me demande une proforma.', q:'Que devez-vous envoyer ?',
+  ok:'Une facture pro forma, avant le paiement', ko:['La facture définitive','Un avoir','Un bon de commande'], k:['PROFORMA','Facture pro forma'],
+  ex:'La pro forma ressemble à une facture mais n\'en est pas une : elle sert avant le paiement (banque, financement, subvention).'},
+ {who:'Le gérant', s:'Le client a payé deux fois la même facture, fais-lui un avoir.', q:'Qu\'est-ce que vous allez établir ?',
+  ok:'Un document qui annule ou réduit une facture', ko:['Une nouvelle facture','Une lettre de relance','Un bon de commande'], k:['AVOIR','Avoir'],
+  ex:'L\'avoir annule ou réduit une facture déjà émise : il permet ensuite de rembourser le client.'},
+ {who:'Nadia, assistante commerciale', s:'Tu peux m\'envoyer l\'ODJ de la réunion de lundi ?', q:'Que demande Nadia ?',
+  ok:'La liste des sujets qui seront abordés', ko:['Le résumé de ce qui a été décidé','La liste des participants','Le procès-verbal signé'], k:['ODJ','Ordre du jour'],
+  ex:'L\'ODJ (ordre du jour) s\'envoie avant la réunion ; le CR (compte rendu) se rédige après.'},
+ {who:'La directrice, après la réunion', s:'Rédige le CR et diffuse-le à toute l\'équipe avant vendredi.', q:'Que devez-vous rédiger ?',
+  ok:'Le compte rendu de la réunion', ko:['L\'ordre du jour','La convocation','Un rapport d\'activité'], k:['CR','Compte rendu'],
+  ex:'Le CR résume ce qui a été dit et décidé pendant la réunion.'},
+ {who:'Rudy, technicien', s:'J\'ai payé l\'essence pour l\'intervention, je te laisse ma NDF avec le ticket.', q:'Que fait Rudy ?',
+  ok:'Il demande le remboursement de sa dépense', ko:['Il dépose une réclamation','Il transmet un bon de commande','Il signale un accident'], k:['NDF','Note de frais'],
+  ex:'La NDF (note de frais) permet de rembourser une dépense avancée par un salarié, avec son justificatif.'},
+ {who:'Un fournisseur', s:'Nous avons bien reçu votre BDC, vous recevrez l\'ARC dans la journée.', q:'Qu\'allez-vous recevoir ?',
+  ok:'La confirmation que votre commande est enregistrée', ko:['Le bon de livraison','La facture','Un nouveau devis'], k:['ARC','Accusé de réception de commande'],
+  ex:'BDC = bon de commande (envoyé par vous) ; ARC = accusé de réception de commande (renvoyé par le fournisseur).'},
+ {who:'Le gérant', s:'La résiliation part en recommandé : garde bien l\'AR quand il revient.', q:'Qu\'est-ce que l\'AR ?',
+  ok:'La preuve que le destinataire a reçu la lettre', ko:['La preuve de dépôt à La Poste','Une copie de la lettre','La réponse de l\'assureur'], k:['AR','Accusé de réception'],
+  ex:'La preuve de dépôt montre la date d\'envoi ; l\'AR prouve la réception par le destinataire.'},
+ {who:'La banque', s:'Pour ouvrir le compte professionnel, merci de fournir un Kbis de moins de 3 mois.', q:'Que demande la banque ?',
+  ok:'Un document qui prouve l\'existence légale de l\'entreprise', ko:['Les statuts de la société','Le dernier bilan','Une attestation d\'assurance'], k:['KBIS','Extrait Kbis'],
+  ex:'L\'extrait Kbis est la « carte d\'identité » de l\'entreprise.'},
+ {who:'Le gérant', s:'Affiche la NS sur les horaires de Noël en salle de pause.', q:'Qu\'allez-vous afficher ?',
+  ok:'Une note qui donne une consigne au personnel', ko:['Une note qui informe sans consigne','Une convocation','Un procès-verbal'], k:['NS','Note de service'],
+  ex:'La NS (note de service) donne une consigne ; la NI (note d\'information) informe seulement.'}
+];
+const FILES = [
+ {s:'Le bon de livraison du fournisseur Bureau Plus, reçu le 12 novembre 2026, pour des ramettes de papier.',
+  ok:'20261112_BL_BureauPlus_Ramettes',
+  ko:[['12112026_BL_BureauPlus_Ramettes','La date doit s\'écrire AAAAMMJJ, l\'année d\'abord.'],
+      ['20261112_BDC_BureauPlus_Ramettes','BDC, c\'est le bon de commande. Le bon de livraison, c\'est BL.'],
+      ['20261112 BL Bureau Plus Ramettes','Pas d\'espaces : on sépare avec le tiret bas « _ ».']]},
+ {s:'La convocation de M. Joël Bambuck à un entretien, datée du 3 novembre 2026.',
+  ok:'20261103_CONVOC_BambuckJ_Entretien',
+  ko:[['20261103_CR_BambuckJ_Entretien','CR, c\'est le compte rendu. La convocation, c\'est CONVOC.'],
+      ['2026-11-03_convocation_Bambuck','Le code s\'écrit en majuscules et l\'objet manque.'],
+      ['20261103_CONVOC_BambuckJ_Entretien_final','Jamais de « final » : on utilise V01, V02…']]},
+ {s:'La facture pro forma pour l\'Hôtel Les Flamboyants (location d\'une salle de séminaire), datée du 5 novembre 2026.',
+  ok:'20261105_PROFORMA_HotelFlamboyants_SalleSeminaire',
+  ko:[['20261105_FACT_HotelFlamboyants_SalleSeminaire','Une pro forma n\'est pas une facture définitive : son code est PROFORMA.'],
+      ['20261105_PROFORMA_HôtelFlamboyants_SalleSéminaire','Pas d\'accents dans un nom de fichier.'],
+      ['PROFORMA_HotelFlamboyants_20261105','La date se place toujours en premier.']]},
+ {s:'La note de service sur les horaires de Noël, deuxième version, modifiée le 10 novembre 2026.',
+  ok:'20261110_NS_Agence_HorairesNoel_V02',
+  ko:[['20261110_NI_Agence_HorairesNoel_V02','NI, c\'est une note d\'information. Une consigne, c\'est une note de service : NS.'],
+      ['20261110_NS_Agence_HorairesNoel_definitif','Jamais de « définitif » : on utilise V01, V02…'],
+      ['20261110_NS_Agence_HorairesNoel(2)','Pas de parenthèses : on numérote les versions avec V01, V02…']]},
+ {s:'La demande de congés payés de Mme Laura Coco, datée du 28 octobre 2026, pour décembre.',
+  ok:'20261028_CP_CocoL_CongesDecembre',
+  ko:[['28102026_CP_CocoL_CongesDecembre','La date doit s\'écrire AAAAMMJJ, l\'année d\'abord.'],
+      ['20261028_CP_Coco Laura_Conges','Pas d\'espaces, et on écrit le nom puis l\'initiale du prénom : CocoL.'],
+      ['20261028_PLANNING_CocoL_CongesDecembre','Une demande de congés payés a son propre code : CP.']]},
+ {s:'Le relevé bancaire d\'octobre de la Banque des Îles, daté du 31 octobre 2026.',
+  ok:'20261031_RELEVE_BanqueDesIles_Octobre',
+  ko:[['20261031_RIB_BanqueDesIles_Octobre','Le RIB donne les coordonnées bancaires ; le relevé, c\'est RELEVE.'],
+      ['31-10-2026_RELEVE_BanqueDesIles_Octobre','Avec JJ-MM-AAAA, les fichiers ne se trient pas dans l\'ordre chronologique.'],
+      ['20261031_RELEVE_BanqueDesÎles_Octobre','Pas d\'accents ni de lettres spéciales comme « Î ».']]}
+];
+
+// ---------- Outils ----------
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const $app = document.getElementById('app');
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function distractors(item, n) {
+  const same = shuffle(CODES.filter(c => c[2] === item[2] && c[0] !== item[0]));
+  const other = shuffle(CODES.filter(c => c[2] !== item[2]));
+  return [...same.slice(0, 2), ...other].slice(0, n);
+}
+const ROUNDS = [
+  {n:1, color:'var(--green)', title:'Quel est le code ?', desc:'On vous donne un document, trouvez son code.'},
+  {n:2, color:'var(--blue)', title:'Que veut dire ce code ?', desc:'On vous donne un code, trouvez le document.'},
+  {n:3, color:'var(--violet)', title:'De quoi s\'agit-il ?', desc:'On vous dit à quoi sert un document, trouvez lequel.'},
+  {n:4, color:'var(--blue)', title:'Au bureau', desc:'Vos collègues parlent en codes : comprenez ce qu\'ils veulent dire.'},
+  {n:5, color:'var(--violet)', title:'Le bon nom de fichier', desc:'Repérez le seul nom qui respecte la nomenclature.'},
+  {n:6, color:'var(--green)', title:'Les paires', desc:'Associez chaque code à son document, le plus vite possible.'}
+];
+
+// ---------- État ----------
+let S;
+function newGame(name) {
+  const pool = shuffle(CODES);
+  const qs = [];
+  pool.slice(0, 6).forEach(it => qs.push({round:1, item:it}));
+  pool.slice(6, 12).forEach(it => qs.push({round:2, item:it}));
+  pool.slice(12, 18).forEach(it => qs.push({round:3, item:it}));
+  shuffle(DIALOGS).slice(0, 5).forEach(d => qs.push({round:4, dlg:d}));
+  shuffle(FILES).slice(0, 4).forEach(f => qs.push({round:5, file:f}));
+  qs.push({round:6, pairs: shuffle(pool.slice(18)).slice(0, 6)});
+  S = {name, qs, i:0, score:0, streak:0, best:0, errors:[], max: (6 + 6 + 6 + 5 + 4) * 10 + 6 * 5};
+}
+
+// ---------- Écrans ----------
+function home() {
+  $app.innerHTML = `
+  <div class="card">
+    <h1>🎲 Le grand jeu des codes</h1>
+    <p class="sub">Testez votre connaissance des documents de l'entreprise et de la nomenclature. Six manches, une seule règle : s'amuser !</p>
+    <div class="rounds">${ROUNDS.map(r => `
+      <div class="round"><div class="num" style="background:${r.color}">${r.n}</div><div><b>${r.title}</b><span>${r.desc}</span></div></div>`).join('')}
+    </div>
+    <label for="nm"><b>Votre prénom</b></label>
+    <input id="nm" type="text" placeholder="Ex. : Laura" maxlength="30" autocomplete="off">
+    <button class="btn" id="go" style="width:100%">C'est parti ! 🚀</button>
+  </div>`;
+  const nm = document.getElementById('nm');
+  const start = () => { newGame(nm.value.trim() || 'Joueur'); intro(); };
+  document.getElementById('go').onclick = start;
+  nm.onkeydown = e => { if (e.key === 'Enter') start(); };
+}
+
+function intro() {
+  const q = S.qs[S.i];
+  const prev = S.i > 0 ? S.qs[S.i - 1].round : 0;
+  if (q.round !== prev) {
+    const r = ROUNDS[q.round - 1];
+    $app.innerHTML = `
+    <div class="card" style="text-align:center;border-left-color:${r.color}">
+      <div class="q-label">Manche ${r.n} sur 6</div>
+      <h1 style="color:${r.color}">${r.title}</h1>
+      <p class="sub">${r.desc}</p>
+      <button class="btn" style="background:${r.color}" id="ok">Je suis prête / prêt !</button>
+    </div>`;
+    document.getElementById('ok').onclick = render;
+  } else render();
+}
+
+function header(q) {
+  const r = ROUNDS[q.round - 1];
+  const pct = Math.round(S.i / S.qs.length * 100);
+  return `
+  <div class="top">
+    <span class="pill" style="background:${r.color}">Manche ${r.n} · ${r.title}</span>
+    <span class="score">⭐ ${S.score} / ${S.max} pts</span>
+    <span class="streak">${S.streak >= 2 ? '🔥 série de ' + S.streak : ''}</span>
+  </div>
+  <div class="bar"><i style="width:${pct}%"></i></div>`;
+}
+
+function render() {
+  const q = S.qs[S.i];
+  if (q.round === 6) return renderPairs(q);
+  let label, question, opts, cls = '', good, explain;
+  if (q.round === 1) {
+    label = 'Quel est le code de ce document ?';
+    question = `${esc(q.item[1])}`;
+    opts = shuffle([q.item, ...distractors(q.item, 3)]).map(c => ({txt:c[0], ok:c[0] === q.item[0]}));
+    good = q.item[0];
+    explain = `<b>${q.item[0]}</b> = ${esc(q.item[1])} <span style="opacity:.75">(${FAM[q.item[2]]})</span>`;
+  } else if (q.round === 2) {
+    label = 'Que signifie ce code ?';
+    question = `<span class="big">${q.item[0]}</span>`;
+    opts = shuffle([q.item, ...distractors(q.item, 3)]).map(c => ({txt:c[1], ok:c[0] === q.item[0]}));
+    good = q.item[1];
+    explain = `<b>${q.item[0]}</b> = ${esc(q.item[1])} <span style="opacity:.75">(${FAM[q.item[2]]})</span>`;
+  } else if (q.round === 3) {
+    label = 'De quel document s\'agit-il ?';
+    question = `« ${esc(q.item[3])} »`;
+    opts = shuffle([q.item, ...distractors(q.item, 3)]).map(c => ({txt:c[1], ok:c[0] === q.item[0]}));
+    good = q.item[1];
+    explain = `<b>${esc(q.item[1])}</b> (code ${q.item[0]}) : ${esc(q.item[3]).toLowerCase()}`;
+  } else if (q.round === 4) {
+    label = '💬 ' + esc(q.dlg.who);
+    question = `<span style="display:block;background:var(--blue-l);border-radius:14px;padding:14px 16px;font-style:italic;font-weight:600;margin-bottom:14px">« ${esc(q.dlg.s)} »</span>${esc(q.dlg.q)}`;
+    opts = shuffle([{txt:q.dlg.ok, ok:true}, ...q.dlg.ko.map(k => ({txt:k, ok:false}))]);
+    good = q.dlg.ok;
+    explain = `<b>${q.dlg.k[0]}</b> = ${esc(q.dlg.k[1])}. ${esc(q.dlg.ex)}`;
+  } else {
+    label = 'Quel nom de fichier respecte la nomenclature ?';
+    question = esc(q.file.s);
+    cls = 'files';
+    opts = shuffle([{txt:q.file.ok, ok:true}, ...q.file.ko.map(k => ({txt:k[0], ok:false, why:k[1]}))]);
+    good = q.file.ok;
+  }
+  $app.innerHTML = `
+  <div class="card" style="border-left-color:${ROUNDS[q.round - 1].color}">
+    ${header(q)}
+    <div class="q-label">${label}</div>
+    <p class="q">${question}</p>
+    <div class="opts ${cls}">${opts.map((o, k) => `<button class="opt" data-k="${k}">${esc(o.txt)}</button>`).join('')}</div>
+    <div class="feedback" id="fb"></div>
+    <button class="btn blue next" id="nx">Suivant ➜</button>
+  </div>`;
+  const btns = [...document.querySelectorAll('.opt')];
+  btns.forEach(b => b.onclick = () => {
+    const o = opts[+b.dataset.k];
+    btns.forEach((x, k) => { x.disabled = true; if (opts[k].ok) x.classList.add('ok'); });
+    const fb = document.getElementById('fb');
+    if (o.ok) {
+      S.streak++; S.best = Math.max(S.best, S.streak);
+      const bonus = 0;
+      S.score += 10;
+      fb.className = 'feedback ok';
+      fb.innerHTML = `✅ ${pick(['Bravo !', 'Exact !', 'Parfait !', 'Bien joué !', 'Excellent !'])} ${bonus ? '<b>+2 bonus série 🔥</b>' : ''}` + (explain ? `<br>${explain}` : '');
+    } else {
+      S.streak = 0;
+      b.classList.add('ko');
+      fb.className = 'feedback ko';
+      if (q.round === 5) {
+        fb.innerHTML = `❌ ${esc(o.why)}<br>La bonne réponse : <b style="font-family:Consolas,monospace">${esc(good)}</b>`;
+        S.errors.push(`Nom de fichier : <code>${esc(good)}</code>`);
+      } else if (q.round === 4) {
+        fb.innerHTML = `❌ Pas tout à fait…<br>${explain}`;
+        S.errors.push(`<code>${q.dlg.k[0]}</code> = ${esc(q.dlg.k[1])}`);
+      } else {
+        fb.innerHTML = `❌ Pas tout à fait…<br>${explain}`;
+        S.errors.push(`<code>${q.item[0]}</code> = ${esc(q.item[1])}`);
+      }
+    }
+    const nx = document.getElementById('nx'); nx.style.display = 'block'; nx.focus();
+    nx.onclick = () => { S.i++; S.i < S.qs.length ? intro() : end(); };
+  });
+}
+
+function renderPairs(q) {
+  const left = shuffle(q.pairs), right = shuffle(q.pairs);
+  let sel = null, found = 0, misses = 0;
+  $app.innerHTML = `
+  <div class="card" style="border-left-color:var(--green)">
+    ${header(q)}
+    <div class="q-label">Touchez un code, puis le document qui va avec</div>
+    <div class="match">
+      <div class="col">${left.map(p => `<button class="tile code" data-c="${p[0]}">${p[0]}</button>`).join('')}</div>
+      <div class="col">${right.map(p => `<button class="tile" data-d="${p[0]}">${esc(p[1])}</button>`).join('')}</div>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <button class="btn blue next" id="nx">Voir mon résultat 🏆</button>
+  </div>`;
+  const codes = [...document.querySelectorAll('[data-c]')], docs = [...document.querySelectorAll('[data-d]')];
+  codes.forEach(t => t.onclick = () => {
+    if (t.classList.contains('done')) return;
+    codes.forEach(x => x.classList.remove('sel')); t.classList.add('sel'); sel = t;
+  });
+  docs.forEach(t => t.onclick = () => {
+    if (!sel || t.classList.contains('done')) return;
+    if (t.dataset.d === sel.dataset.c) {
+      [t, sel].forEach(x => { x.classList.remove('sel'); x.classList.add('done'); x.disabled = true; });
+      found++; S.score += 5; sel = null;
+      document.querySelector('.score').textContent = `⭐ ${S.score} / ${S.max} pts`;
+      if (found === q.pairs.length) {
+        const fb = document.getElementById('fb');
+        fb.className = 'feedback ok';
+        fb.innerHTML = misses === 0 ? '✅ Sans aucune erreur, chapeau ! 🎩' : `✅ Toutes les paires sont trouvées (${misses} erreur${misses > 1 ? 's' : ''} en route).`;
+        const nx = document.getElementById('nx'); nx.style.display = 'block';
+        nx.onclick = () => { S.i++; end(); };
+      }
+    } else {
+      misses++;
+      const p = q.pairs.find(x => x[0] === sel.dataset.c);
+      if (!S.errors.some(e => e.includes(`<code>${p[0]}</code>`))) S.errors.push(`<code>${p[0]}</code> = ${esc(p[1])}`);
+      [t, sel].forEach(x => { x.classList.add('shake'); setTimeout(() => x.classList.remove('shake'), 400); });
+    }
+  });
+}
+
+function end() {
+  const pct = Math.round(S.score / S.max * 100);
+  const [medal, msg] = pct >= 85 ? ['🏆', 'Championne / champion des codes !'] : pct >= 65 ? ['🥈', 'Très bon score, encore un petit effort !'] : pct >= 45 ? ['🥉', 'C\'est un bon début : relisez la fiche et retentez !'] : ['📚', 'Un petit tour par la fiche, et on rejoue !'];
+  $app.innerHTML = `
+  <div class="card result">
+    <div class="q-label">Résultat de ${esc(S.name)}</div>
+    <div class="medal">${medal}</div>
+    <p class="final">${S.score} <span style="font-size:24px;color:var(--muted)">/ ${S.max} pts</span></p>
+    <p class="sub" style="margin-top:6px">${msg}<br>Meilleure série : ${S.best} 🔥</p>
+    ${S.errors.length ? `<div class="recap"><h3>📌 À revoir</h3><ul>${S.errors.map(e => `<li>${e}</li>`).join('')}</ul></div>` : '<p><b>Aucune erreur, bravo ! 🎉</b></p>'}
+    <div class="actions">
+      <button class="btn" id="again">Rejouer 🔁</button>
+      <button class="btn violet" id="home">Changer de joueur</button>
+    </div>
+  </div>`;
+  document.getElementById('again').onclick = () => { newGame(S.name); intro(); };
+  document.getElementById('home').onclick = home;
+  if (pct >= 65) confetti();
+}
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+// ---------- Confettis ----------
+function confetti() {
+  const cv = document.getElementById('confetti'), cx = cv.getContext('2d');
+  cv.width = innerWidth; cv.height = innerHeight;
+  const cols = ['#45967C', '#247091', '#484596', '#E8B730'];
+  const ps = Array.from({length: 140}, () => ({x: Math.random() * cv.width, y: -20 - Math.random() * cv.height, r: 4 + Math.random() * 5,
+    c: pick(cols), vy: 2 + Math.random() * 3, vx: -1 + Math.random() * 2, a: Math.random() * 6}));
+  let f = 0;
+  (function loop() {
+    cx.clearRect(0, 0, cv.width, cv.height);
+    ps.forEach(p => { p.y += p.vy; p.x += p.vx; p.a += .1; cx.fillStyle = p.c; cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); cx.restore(); });
+    if (++f < 260) requestAnimationFrame(loop); else cx.clearRect(0, 0, cv.width, cv.height);
+  })();
+}
+
+home();
+</script>
+</body>
+</html>
