@@ -183,7 +183,46 @@ const DIALOGS = [
   ex:'L\'extrait Kbis est la « carte d\'identité » de l\'entreprise.'},
  {who:'Le gérant', s:'Affiche la NS sur les horaires de Noël en salle de pause.', q:'Qu\'allez-vous afficher ?',
   ok:'Une note qui donne une consigne au personnel', ko:['Une note qui informe sans consigne','Une convocation','Un procès-verbal'], k:['NS','Note de service'],
-  ex:'La NS (note de service) donne une consigne ; la NI (note d\'information) informe seulement.'}
+  ex:'La NS (note de service) donne une consigne ; la NI (note d\'information) informe seulement.'},
+ {who:'Le cabinet comptable', s:'Pense à faire la remise de chèques à la banque avant midi.', q:'Que devez-vous faire ?',
+  ok:'Déposer les chèques reçus à la banque, avec un bordereau', ko:['Envoyer le relevé bancaire au comptable','Rembourser un client par chèque','Faire un virement au fournisseur'], k:['REMISE','Bordereau de remise de chèques'],
+  ex:'Le bordereau de remise liste les chèques déposés à la banque.'},
+ {who:'Le gérant', s:'Le fournisseur affirme avoir tout livré : retrouve-moi notre BR.', q:'Que cherchez-vous ?',
+  ok:'Le document où l\'on a contrôlé ce qui a été reçu', ko:['Le bon de commande','La facture du fournisseur','Le devis du fournisseur'], k:['BR','Bon de réception'],
+  ex:'Le BR prouve ce que l\'entreprise a réellement reçu : c\'est lui qui tranche en cas de litige.'},
+ {who:'La directrice', s:'Envoie la convoc à M. Ozier pour son entretien de jeudi.', q:'Qu\'allez-vous envoyer ?',
+  ok:'Une invitation officielle à l\'entretien', ko:['Le compte rendu de l\'entretien','L\'ordre du jour de la réunion d\'équipe','Une note de service'], k:['CONVOC','Convocation'],
+  ex:'La convocation fixe officiellement la date, l\'heure, le lieu et l\'objet du rendez-vous.'},
+ {who:'Le gérant', s:'Le nouveau technicien arrive lundi, prépare son CTRAV pour la signature.', q:'Que devez-vous préparer ?',
+  ok:'Son contrat de travail', ko:['Son certificat de travail','Son attestation employeur','Son premier bulletin de paie'], k:['CTRAV','Contrat de travail'],
+  ex:'Le contrat se signe à l\'arrivée ; le certificat de travail se remet au départ.'},
+ {who:'Un ancien salarié au téléphone', s:'Je suis parti fin septembre et j\'attends toujours mon certificat de travail.', q:'Quel est le code de ce document ?',
+  ok:'CERT', ko:['CTRAV','ATTEST','BP'], k:['CERT','Certificat de travail'],
+  ex:'Le certificat de travail est obligatoirement remis au salarié qui quitte l\'entreprise.'},
+ {who:'Le gérant', s:'Les nouvelles CGV s\'appliquent au 1er janvier : joins-les à tous les devis.', q:'Que joignez-vous aux devis ?',
+  ok:'Les conditions générales de vente', ko:['La grille des tarifs','Le règlement intérieur','Le catalogue des produits'], k:['CGV','Conditions générales de vente'],
+  ex:'Les CGV fixent les règles commerciales : prix, délais, paiement, pénalités de retard.'},
+ {who:'Une cliente au téléphone', s:'Je vous ai écrit il y a dix jours, est-ce que ma réclamation a été traitée ?', q:'Quel est le code de son courrier ?',
+  ok:'RECLA', ko:['RELANCE','LETTRE','AR'], k:['RECLA','Réclamation'],
+  ex:'C\'est bien une lettre, mais son code précise sa nature : une réclamation (RECLA) se suit jusqu\'à sa résolution.'},
+ {who:'Le gérant', s:'Toujours pas de paiement pour la facture d\'août : envoie-lui un petit rappel.', q:'Quel document allez-vous envoyer ?',
+  ok:'RELANCE', ko:['RECLA','AVOIR','ARC'], k:['RELANCE','Lettre de relance'],
+  ex:'La relance rappelle un paiement en attente ; la réclamation, elle, vient du client mécontent.'},
+ {who:'Nadia, assistante commerciale', s:'Mets à jour le TAB des interventions avant la réunion.', q:'Que devez-vous mettre à jour ?',
+  ok:'Le tableau de suivi des interventions', ko:['Le planning des congés','Le compte rendu de la dernière réunion','Le registre du courrier'], k:['TAB','Tableau de suivi'],
+  ex:'Le tableau de suivi montre où en est chaque dossier : tout le monde doit pouvoir s\'y fier.'},
+ {who:'Le gérant', s:'Le PV de l\'assemblée générale doit être signé, puis classé.', q:'Qu\'est-ce que le PV ?',
+  ok:'La trace officielle des décisions prises', ko:['L\'ordre du jour de l\'assemblée','La convocation des associés','Les statuts de la société'], k:['PV','Procès-verbal'],
+  ex:'Le procès-verbal a une valeur officielle : il prouve ce qui a été décidé.'},
+ {who:'La directrice', s:'Avant de payer cette facture, compare-la avec le BDC et le BL.', q:'Pourquoi cette vérification ?',
+  ok:'Pour payer seulement ce qui a été commandé et livré', ko:['Pour vérifier l\'adresse du fournisseur','Pour recalculer la TVA','Pour préparer un avoir'], k:['BDC','Bon de commande'],
+  ex:'Commande (BDC), livraison (BL), facture (FACT) : les trois doivent correspondre avant le paiement.'},
+ {who:'Le cabinet comptable', s:'Il me faut tous les justifs de septembre pour valider les NDF.', q:'Que demande le comptable ?',
+  ok:'Les tickets et reçus qui prouvent les dépenses', ko:['Les relevés bancaires','Les bulletins de paie','Les factures clients'], k:['JUSTIF','Justificatif'],
+  ex:'Sans justificatif, une note de frais ne peut pas être remboursée.'},
+ {who:'Laura, collègue', s:'J\'ai besoin d\'une attestation de ma situation dans l\'entreprise pour mon dossier de logement.', q:'Quel est le code de ce document ?',
+  ok:'ATTEST', ko:['CERT','CTRAV','BP'], k:['ATTEST','Attestation employeur'],
+  ex:'L\'attestation employeur certifie qu\'une personne travaille dans l\'entreprise ; le certificat se remet au départ.'}
 ];
 const FILES = [
  {s:'Le bon de livraison du fournisseur Bureau Plus, reçu le 12 novembre 2026, pour des ramettes de papier.',
@@ -215,8 +254,29 @@ const FILES = [
   ok:'20261031_RELEVE_BanqueDesIles_Octobre',
   ko:[['20261031_RIB_BanqueDesIles_Octobre','Le RIB donne les coordonnées bancaires ; le relevé, c\'est RELEVE.'],
       ['31-10-2026_RELEVE_BanqueDesIles_Octobre','Avec JJ-MM-AAAA, les fichiers ne se trient pas dans l\'ordre chronologique.'],
-      ['20261031_RELEVE_BanqueDesÎles_Octobre','Pas d\'accents ni de lettres spéciales comme « Î ».']]}
+      ['20261031_RELEVE_BanqueDesÎles_Octobre','Pas d\'accents ni de lettres spéciales comme « Î ».']]},
+ {s:'Le compte rendu de la réunion d\'équipe du 4 novembre 2026.',
+  ok:'20261104_CR_Agence_ReunionEquipe',
+  ko:[['20261104_ODJ_Agence_ReunionEquipe','L\'ODJ s\'envoie avant la réunion ; après, c\'est le compte rendu : CR.'],
+      ['Compte_rendu_reunion_04-11-2026','La date se place en premier, au format AAAAMMJJ, et le code s\'écrit en majuscules.'],
+      ['20261104_CR_Agence_Réunion Équipe','Pas d\'accents ni d\'espaces.']]},
+ {s:'La note de frais de M. Rudy Alexis pour un déplacement au Moule le 6 novembre 2026.',
+  ok:'20261106_NDF_AlexisR_DeplacementLeMoule',
+  ko:[['20261106_NDF_RA_Deplacement','Les initiales seules sont ambiguës, et l\'objet est trop vague.'],
+      ['20261106_JUSTIF_AlexisR_DeplacementLeMoule','Le justificatif, c\'est le ticket ; la demande de remboursement, c\'est la NDF.'],
+      ['2026_11_06_NDF_AlexisR_DeplacementLeMoule','La date s\'écrit AAAAMMJJ, sans séparateur.']]},
+ {s:'L\'avoir accordé au client Garage Moïse le 9 novembre 2026 pour une double facturation.',
+  ok:'20261109_AVOIR_GarageMoise_DoubleFacturation',
+  ko:[['20261109_FACT_GarageMoise_DoubleFacturation','Un avoir n\'est pas une facture : son code est AVOIR.'],
+      ['20261109_AVOIR_GarageMoïse_DoubleFacturation','Pas de lettres accentuées comme « ï ».'],
+      ['20261109_AVOIR_GarageMoise_DoubleFacturation_copie','Jamais de « copie » dans un nom de fichier.']]},
+ {s:'Le contrat de travail de Mme Inès Ozier, assistante, signé le 2 novembre 2026.',
+  ok:'20261102_CTRAV_OzierI_Assistante',
+  ko:[['20261102_CERT_OzierI_Assistante','Le certificat de travail se remet au départ ; à l\'embauche, c\'est le contrat : CTRAV.'],
+      ['20261102_CTRAV_Inès Ozier_Assistante','Pas d\'espaces ni d\'accents : nom puis initiale du prénom, OzierI.'],
+      ['20261102_CTRAV_OzierI_Assistante#signé','Caractères spéciaux et accents interdits.']]}
 ];
+
 
 // ---------- Outils ----------
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -241,13 +301,13 @@ let S;
 function newGame(name) {
   const pool = shuffle(CODES);
   const qs = [];
-  pool.slice(0, 6).forEach(it => qs.push({round:1, item:it}));
-  pool.slice(6, 12).forEach(it => qs.push({round:2, item:it}));
-  pool.slice(12, 18).forEach(it => qs.push({round:3, item:it}));
-  shuffle(DIALOGS).slice(0, 5).forEach(d => qs.push({round:4, dlg:d}));
-  shuffle(FILES).slice(0, 4).forEach(f => qs.push({round:5, file:f}));
-  qs.push({round:6, pairs: shuffle(pool.slice(18)).slice(0, 6)});
-  S = {name, qs, i:0, score:0, streak:0, best:0, errors:[], max: (6 + 6 + 6 + 5 + 4) * 10 + 6 * 5};
+  pool.slice(0, 10).forEach(it => qs.push({round:1, item:it}));
+  pool.slice(10, 20).forEach(it => qs.push({round:2, item:it}));
+  pool.slice(20, 30).forEach(it => qs.push({round:3, item:it}));
+  shuffle(DIALOGS).slice(0, 10).forEach(d => qs.push({round:4, dlg:d}));
+  shuffle(FILES).slice(0, 6).forEach(f => qs.push({round:5, file:f}));
+  qs.push({round:6, pairs: shuffle(pool.slice(30)).slice(0, 8)});
+  S = {name, qs, i:0, score:0, streak:0, best:0, errors:[], max: (10 + 10 + 10 + 10 + 6) * 10 + 8 * 5};
 }
 
 // ---------- Écrans ----------
